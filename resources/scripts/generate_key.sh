@@ -87,4 +87,4 @@ if [[ ${GIT_REPO} == "gitlab" ]]; then
 fi
 
 # Set correct permissions on SSH Key
-chown -R 1000:1000 "${JENKINS_SSH_DIR}"
+chown -R jenkins. "${JENKINS_SSH_DIR}"
