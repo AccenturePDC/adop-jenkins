@@ -82,6 +82,9 @@ if [[ ${GIT_REPO} == "gitlab" ]]; then
   echo "Obtaining GitLab root token.."
   GITLAB_ROOT_TOKEN="$(curl -X POST "http://gitlab/gitlab/api/v3/session?login=root&password=${GITLAB_ROOT_PASSWORD}" | python -c "import json,sys;obj=json.load(sys.stdin);print obj['private_token'];")"
 
+  # Throw the token to a file for later use..
+  echo "${GITLAB_ROOT_TOKEN}" > ${JENKINS_HOME}/gitlab-root-token
+
   echo "Initializing jenkins user in Gitlab.."
   curl --silent --header "PRIVATE-TOKEN: ${GITLAB_ROOT_TOKEN}" -X POST "http://gitlab/gitlab/api/v3/users?email=${GIT_GLOBAL_CONFIG_EMAIL}&name=jenkins&username=jenkins&password=${password}&provider=ldap&extern_uid=cn=jenkins,ou=people,${LDAP_ROOTDN}&admin=true&confirm=false" | true
 
