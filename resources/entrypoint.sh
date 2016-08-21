@@ -27,24 +27,7 @@ elif [[ $ADOP_GITLAB_ENABLED = "true" ]]; then
   # Delete Load Platform for Gerrit
   rm -rf /usr/share/jenkins/ref/jobs/Load_Platform
   
-  # Wait until gitlab is up and running
-  SLEEP_TIME=10
-  MAX_RETRY=12
-  COUNT=0
-  until [[ $(curl -I -s gitlab/gitlab/users/sign_in | head -1 | grep 200 | wc -l) -eq 1 ]] || [[ $COUNT -eq $MAX_RETRY ]]
-  do
-    echo "Testing GitLab Connection endpoint - http://gitlab/gitlab .."
-    echo "GitLab unavailable, sleeping for ${SLEEP_TIME}s ..retrying $COUNT/$MAX_RETRY"
-    sleep ${SLEEP_TIME}
-    ((COUNT ++))
-  done
-
-  if [[ $COUNT -ne $MAX_RETRY ]]; then
-    nohup /usr/share/jenkins/ref/adop\_scripts/generate_key.sh -c ${host} -p ${port} -u ${username} -w ${password} &
-  else
-    echo "Skipping Jenkins to Gitlab access configuration because max timeout retries has been reached.."
-  fi
-
+  nohup /usr/share/jenkins/ref/adop\_scripts/generate_key.sh -c ${host} -p ${port} -u ${username} -w ${password} &
 fi
 
 echo "Starting Jenkins.."

@@ -67,22 +67,26 @@ fi
 # If Git repo choice is Gitlab
 if [[ ${GIT_REPO} == "gitlab" ]]; then
 
-  echo "Obtaining GitLab root token .."
-  GITLAB_ROOT_TOKEN="$(curl -X POST "http://gitlab/gitlab/api/v3/session?login=root&password=${GITLAB_ROOT_PASSWORD}" | python -c "import json,sys;obj=json.load(sys.stdin);print obj['private_token'];")"
+  # Wait until gitlab is up and running
+  SLEEP_TIME=10
+  MAX_RETRY=12
+  COUNT=0
+  until [[ $(curl -I -s gitlab/gitlab/users/sign_in | head -1 | grep 200 | wc -l) -eq 1 ]] || [[ $COUNT -eq $MAX_RETRY ]]
+  do
+    echo "Testing GitLab Connection endpoint - http://gitlab/gitlab .."
+    echo "GitLab unavailable, sleeping for ${SLEEP_TIME}s ..retrying $COUNT/$MAX_RETRY"
+    sleep ${SLEEP_TIME}
+    ((COUNT ++))
+  done
 
-  # Throw the token to a file for later use..
-  echo "${GITLAB_ROOT_TOKEN}" > ${JENKINS_HOME}/gitlab-root-token
+  echo "Obtaining GitLab root token.."
+  GITLAB_ROOT_TOKEN="$(curl -X POST "http://gitlab/gitlab/api/v3/session?login=root&password=${GITLAB_ROOT_PASSWORD}" | python -c "import json,sys;obj=json.load(sys.stdin);print obj['private_token'];")"
 
   echo "Initializing jenkins user in Gitlab.."
   curl --silent --header "PRIVATE-TOKEN: ${GITLAB_ROOT_TOKEN}" -X POST "http://gitlab/gitlab/api/v3/users?email=${GIT_GLOBAL_CONFIG_EMAIL}&name=jenkins&username=jenkins&password=${password}&provider=ldap&extern_uid=cn=jenkins,ou=people,${LDAP_ROOTDN}&admin=true&confirm=false" | true
 
   echo "Adding jenkins SSH key to GitLab root user.."
   curl --silent --header "PRIVATE-TOKEN: ${GITLAB_ROOT_TOKEN}" -X POST "http://gitlab/gitlab/api/v3/users/1/keys" --data-urlencode "title=jenkins@adop-core" --data-urlencode "key=${public_key_val}" | true
-
-  # The following xml is a gitlab connection settings for Jenkins Managed Configurations to enable Gitlab webhooks.
-  # There isn't a way to do this via groovy scripts and this is the current workaround..
-  echo "Uploading successful. Updating Jenkins GitLab connection configuration."
-  cp /usr/share/jenkins/ref/com.dabsquared.gitlabjenkins.connection.GitLabConnectionConfig.xml ${JENKINS_HOME}/
 
 fi
 
