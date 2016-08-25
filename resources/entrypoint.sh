@@ -1,11 +1,13 @@
 #!/bin/bash
 
 if [[ $ADOP_GERRIT_ENABLED == "true" ]] && [[ $ADOP_GITLAB_ENABLED = "true" ]]; then
+
   echo "You can't have both Gerrit and Gitlab enabled.."
   echo "Please set only either to true. Exiting with error.."
   exit 1
 
 elif [[ $ADOP_GERRIT_ENABLED == "true" ]]; then
+
   echo "'jenkins' user will now be configured for Gerrit."
   host=$GERRIT_HOST_NAME
   port=$GERRIT_PORT
@@ -18,6 +20,7 @@ elif [[ $ADOP_GERRIT_ENABLED == "true" ]]; then
   nohup /usr/share/jenkins/ref/adop\_scripts/generate_key.sh -c ${host} -p ${port} -u ${username} -w ${password} &
 
 elif [[ $ADOP_GITLAB_ENABLED = "true" ]]; then
+
   echo "'jenkins' user will now be configured for Gitlab."
   host=$GITLAB_HOST_NAME
   port=$GITLAB_PORT

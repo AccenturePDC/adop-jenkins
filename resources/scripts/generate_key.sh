@@ -61,7 +61,6 @@ if [[ ! $(ls -A "${JENKINS_SSH_DIR}") ]]; then
   # Set correct permissions for Content Directory
   chown -R 1000:1000 "${JENKINS_USER_CONTENT_DIR}"
  
-  public_key_val=$(cat ${JENKINS_SSH_DIR}/id_rsa.pub) 
 fi
 
 # If Git repo choice is Gitlab
@@ -85,6 +84,8 @@ if [[ ${GIT_REPO} == "gitlab" ]]; then
   # Throw the token to a file for later use..
   echo "${GITLAB_ROOT_TOKEN}" > ${JENKINS_HOME}/gitlab-root-token
 
+  public_key_val=$(cat ${JENKINS_SSH_DIR}/id_rsa.pub)
+
   echo "Initializing jenkins user in Gitlab.."
   curl --silent --header "PRIVATE-TOKEN: ${GITLAB_ROOT_TOKEN}" -X POST "http://gitlab/gitlab/api/v3/users?email=${GIT_GLOBAL_CONFIG_EMAIL}&name=jenkins&username=jenkins&password=${password}&provider=ldap&extern_uid=cn=jenkins,ou=people,${LDAP_ROOTDN}&admin=true&confirm=false" | true
 
@@ -94,4 +95,4 @@ if [[ ${GIT_REPO} == "gitlab" ]]; then
 fi
 
 # Set correct permissions on SSH Key
-chown -R jenkins. "${JENKINS_SSH_DIR}"
+chown -R 1000:1000 "${JENKINS_SSH_DIR}"
